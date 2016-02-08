@@ -226,8 +226,12 @@ ResourceCommand:
 ;
 
 UriLink:
-    (templateProperty=ID '=' entityProperty=UriLinkage)
+    (templateProperty=QueryParameterName '=' entityProperty=UriLinkage)
 ;
+
+terminal QueryParamName:
+    '^'?('a'..'z'|'A'..'Z'|'_'|'$')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*
+; 
 
 UriLinkage:
 	{UriLinkage} name=URIPARAM 
