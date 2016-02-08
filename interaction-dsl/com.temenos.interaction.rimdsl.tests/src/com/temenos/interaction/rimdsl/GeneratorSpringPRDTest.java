@@ -1291,4 +1291,33 @@ public class GeneratorSpringPRDTest {
 		assertTrue(simpleBFound);
 		assertTrue(simpleEFound);		
 	}
+	private final static String PAGING_RIM = "" + "rim Dynamic {" + LINE_SEP + "    command GetEntity" + LINE_SEP
+            + " command UpdateEntity" + LINE_SEP +
+            "initial resource A {" + LINE_SEP + "   type: collection" + LINE_SEP + "    entity: ENTITY" + LINE_SEP
+            + " view: GetEntity" + LINE_SEP
+            + "GET *-> locator findsource(\"{reference}\"){" + LINE_SEP + "parameters [ $top = \"10\" ]" + LINE_SEP +"title: \"Who & Why\"" + LINE_SEP + "}"
+            + LINE_SEP + "}" + LINE_SEP
+            + "resource B {" + "    type: item" + LINE_SEP + "  entity: ENTITY" + LINE_SEP + "  actions [ UpdateEntity ]"
+            + LINE_SEP + "}" + LINE_SEP + "}" + LINE_SEP + "";
+
+	@Test
+    public void testGeneratePagingRim() throws Exception {
+        DomainModel domainModel = parseHelper.parse(PAGING_RIM);
+        ResourceInteractionModel model = (ResourceInteractionModel) domainModel.getRims().get(0);
+        InMemoryFileSystemAccess fsa = new InMemoryFileSystemAccess();
+        underTest.doGenerate(model.eResource(), fsa);
+        
+        Map<String, Object> allFiles = fsa.getAllFiles();
+
+        String expectedKey = IFileSystemAccess.DEFAULT_OUTPUT + "IRIS-Paging-PRD.xml";
+        assertTrue(fsa.getFiles().containsKey(expectedKey));
+        String output = fsa.getFiles().get(expectedKey).toString();
+        System.out.println("IRIS-Paging-PRD.xml File output : "+output);
+        //System.error.println(output);        
+        output = removeFormatting(output);
+
+        assertTrue(output.contains("<property name=\"uriParameters\"><util:map>"));
+        assertTrue(output.contains("<entry key=\"$top\" value=\"10\"/>"));
+    }
+	
 }
