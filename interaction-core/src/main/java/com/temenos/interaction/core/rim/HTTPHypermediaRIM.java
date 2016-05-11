@@ -291,7 +291,7 @@ public class HTTPHypermediaRIM implements HTTPResourceInteractionModel {
 
     private Response handleRequest(@Context HttpHeaders headers, @Context UriInfo uriInfo, Event event,
             EntityResource<?> resource) {
-        long begin = System.nanoTime();
+        long begin = System.currentTimeMillis();
         // determine action
         InteractionCommand action = hypermediaEngine.determineAction(event, getFQResourcePath());
 
@@ -312,10 +312,10 @@ public class HTTPHypermediaRIM implements HTTPResourceInteractionModel {
         } else {
             response = handleRequest(headers, ctx, event, action, resource, null);
         }
-        long end = System.nanoTime();
+        long end = System.currentTimeMillis();
 
-        logger.info("iris_request IRIS Service RequestTime(ns)=" + String.valueOf(end - begin) + " startTime(ns)="
-                + String.valueOf(begin) + " endTime(ns)=" + String.valueOf(end) + "EntityName=" + getFQResourcePath()
+        logger.info("iris_request IRIS Service RequestTime(ms)=" + String.valueOf(end - begin) + " startTime(ms)="
+                + String.valueOf(begin) + " endTime(ms)=" + String.valueOf(end) + "EntityName=" + getFQResourcePath()
                 + " MethodType=" + event.getMethod() + " URI=" + uriInfo.getRequestUri()
                 + (cached != null ? " (cached response)" : ""));
 
@@ -341,11 +341,11 @@ public class HTTPHypermediaRIM implements HTTPResourceInteractionModel {
         // execute action
         InteractionCommand.Result result = null;
         try {
-            long begin = System.nanoTime();
+            long begin = System.currentTimeMillis();
             result = action.execute(ctx);
-            long end = System.nanoTime();
-            logger.info("iris_request_command CommandExecution RequestTime(ns)=" + String.valueOf(end - begin)
-                    + " startTime(ns)=" + String.valueOf(begin) + " endTime(ns)=" + String.valueOf(end)
+            long end = System.currentTimeMillis();
+            logger.info("iris_request_command CommandExecution RequestTime(ms)=" + String.valueOf(end - begin)
+                    + " startTime(ms)=" + String.valueOf(begin) + " endTime(ms)=" + String.valueOf(end)
                     + " EntityName=" + getFQResourcePath());
             assert (result != null) : "InteractionCommand must return a result";
             status = determineStatus(headers, event, ctx, result);

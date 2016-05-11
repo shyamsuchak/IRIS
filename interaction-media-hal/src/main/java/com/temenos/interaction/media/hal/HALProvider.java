@@ -245,22 +245,26 @@ public class HALProvider implements MessageBodyReader<RESTResource>, MessageBody
 			MultivaluedMap<String, Object> httpHeaders,
 			OutputStream entityStream) throws IOException,
 			WebApplicationException {
+	    long begin = System.currentTimeMillis();
 		logger.debug("Writing " + mediaType);
 		Representation halResource;
 		try {
 			halResource = buildHalResource(uriInfo.getBaseUri(), resource, type, genericType);
 		}
-		catch(URISyntaxException e) {
-			logger.error("Invalid link syntax", e);
+		catch(URISyntaxException e) {		    
+			logger.error("Invalid link syntax", e);			
 			throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
 		}
 		String baseMediaType = HALMediaType.baseMediaType( mediaType );
 		String representation = halResource.toString(baseMediaType);
 		String charset = HALMediaType.charset( mediaType, "UTF-8" );
-
+		
 		logger.debug("Produced [" + representation + "]");
-
+		
 		entityStream.write(representation.getBytes(charset));
+		long end = System.currentTimeMillis();
+        logger.info("HAL Parser Write RequestTime(ms)=" + String.valueOf(end - begin) + " startTime(ms)="
+                + String.valueOf(begin) + " endTime(ms)=" + String.valueOf(end));
 	}
 
 	private Link findLinkByTransition(Collection<Link> links, Transition transition) {
@@ -637,11 +641,15 @@ public class HALProvider implements MessageBodyReader<RESTResource>, MessageBody
 			/* To detect if the stream is empty (a valid case since an input entity is
 			 * sometimes optional), wrap in a PushbackInputStream before passing on
 			 */
+	        long begin = System.currentTimeMillis();
 			PushbackInputStream wrappedStream = new PushbackInputStream(entityStream);
 			int firstByte = wrappedStream.read();
 			uriInfo = new UriInfoImpl(uriInfo);
 			if ( firstByte == -1 ) {
 					// No data provided
+			        long end = System.currentTimeMillis();
+			        logger.info("HAL Parser Read RequestTime(ms)=" + String.valueOf(end - begin) + " startTime(ms)="
+                            + String.valueOf(begin) + " endTime(ms)=" + String.valueOf(end));
 					return null;
 			} else {
 					// There is something in the body, so we will parse it. It is required
@@ -650,6 +658,9 @@ public class HALProvider implements MessageBodyReader<RESTResource>, MessageBody
 
 					//Parse hal+json into an Entity object
 					Entity entity = buildEntityFromHal(wrappedStream, mediaType);
+					long end = System.currentTimeMillis();
+					logger.info("HAL Parser Read RequestTime(ms)=" + String.valueOf(end - begin) + " startTime(ms)="
+			                + String.valueOf(begin) + " endTime(ms)=" + String.valueOf(end));
 					return new EntityResource<Entity>(entity);
 			}
 	}
